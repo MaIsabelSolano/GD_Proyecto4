@@ -32,6 +32,9 @@ public class PlayerMovement : MonoBehaviour
     public Animator AnimatorF;
     public Animator AnimatorP;
 
+    private float animationMovement;
+
+
     // walking
 
     #endregion
@@ -78,6 +81,14 @@ public class PlayerMovement : MonoBehaviour
         // Animations
         playerInput = Input.GetAxisRaw("Horizontal");
         SwapSprite();
+        
+        if (currentCharacter == 0) {
+            AnimatorP.SetFloat("SpeedP", Input.GetAxisRaw("Horizontal"));
+        }
+        else if (currentCharacter == 1) {
+            // Ffion
+            AnimatorF.SetFloat("Speed", Input.GetAxisRaw("Horizontal"));
+        }
         
     }
 
