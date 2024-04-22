@@ -20,10 +20,15 @@ public class PlayerMovement : MonoBehaviour
     #endregion
 
     #region parameters
-
+    [Header("Parameters")]
     private bool isGrounded = false;
     public float jumpSpeed = 2000f;
     [SerializeField] float movementSpeed;
+
+    public float life = 100f;
+    public float mana = 5f;
+
+    public float flyForce = 100f;
 
     #endregion
 
@@ -34,8 +39,6 @@ public class PlayerMovement : MonoBehaviour
 
     private float animationMovement;
 
-
-    // walking
 
     #endregion
 
@@ -89,6 +92,22 @@ public class PlayerMovement : MonoBehaviour
             // Ffion
             AnimatorF.SetFloat("Speed", Input.GetAxisRaw("Horizontal"));
         }
+
+        // Special moves
+        if (Input.GetKey(KeyCode.Space)) {
+            if (mana > 0) {
+                mana -= Time.deltaTime;
+                if (currentCharacter == 0) {
+                    // Phoenix fly
+                    rb.AddForce(Vector2.up * flyForce);              
+
+                } else if (currentCharacter == 1) {
+                    // Ffion
+                }
+            }
+        }
+
+        Debug.Log("is grounded: " + isGrounded.ToString());
         
     }
 
@@ -101,23 +120,32 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Floor") {
+            isGrounded = false;
+        }
+    }
+
 
     public void ChangeCharacter() {
-        if (Input.GetKeyDown(KeyCode.Alpha2)){
-            if (!Ffion.activeSelf) {
-                Phoenix.SetActive(false);
-                Ffion.SetActive(true);
+        if (isGrounded) {
+            if (Input.GetKeyDown(KeyCode.Alpha2)){
+                if (!Ffion.activeSelf) {
+                    Phoenix.SetActive(false);
+                    Ffion.SetActive(true);
 
-                currentCharacter = 1;
+                    currentCharacter = 1;
+                }
             }
-        }
 
-        if (Input.GetKeyDown(KeyCode.Alpha1)){
-            if (!Phoenix.activeSelf) {
-                Ffion.SetActive(false);
-                Phoenix.SetActive(true);
+            if (Input.GetKeyDown(KeyCode.Alpha1)){
+                if (!Phoenix.activeSelf) {
+                    Ffion.SetActive(false);
+                    Phoenix.SetActive(true);
 
-                currentCharacter = 0;
+                    currentCharacter = 0;
+                }
             }
         }
     }
