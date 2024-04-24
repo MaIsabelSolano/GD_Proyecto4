@@ -175,4 +175,7 @@ public class PlayerMovement : MonoBehaviour
     // private void FixedUpdate() {
     //     rigidBoddies[currentCharacter].MovePosition(rigidBoddies[currentCharacter].position + movement * speed_ * Time.deltaTime);
     // }
+
+    public float getLife() { return life; }
+    public float getMana() { return mana; }
 }
