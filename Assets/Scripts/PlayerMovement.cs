@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -12,7 +13,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] CapsuleCollider2D cc2D_Phoenix;
 
     private List<CapsuleCollider2D> capsuleColliders = new List<CapsuleCollider2D>();
-    private int currentCharacter = 0;
+    public int currentCharacter = 0;
 
     [SerializeField] GameObject Ffion;
     [SerializeField] GameObject Phoenix;
@@ -26,7 +27,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float movementSpeed;
 
     public float life = 100f;
-    public float mana = 5f;
+    public float mana = 3f;
 
     public float flyForce = 100f;
 
@@ -39,8 +40,11 @@ public class PlayerMovement : MonoBehaviour
 
     private float animationMovement;
 
-
     #endregion
+
+    private Vector3 lastPosition;
+
+    private bool hasShield = false;
 
 
     // Start is called before the first frame update
@@ -58,56 +62,65 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // character swapping
-        ChangeCharacter();
+        if (Time.timeScale > 0) 
+        {
+            // character swapping
+            ChangeCharacter();
 
 
-        // movement
-        if(Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)){
-            transform.position += Vector3.left * movementSpeed * Time.deltaTime;
-        }
-        if(Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)){
-            transform.position += Vector3.right * movementSpeed * Time.deltaTime;
-        }
-        if(Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S)){
-            if(!isGrounded){
-                // rigidBoddies[currentCharacter].gravityScale = 2;
+            // movement
+            if(Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)){
+                transform.position += Vector3.left * movementSpeed * Time.deltaTime;
             }
-        }
-        if(Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKey(KeyCode.W)){
-            if(isGrounded){
-                rb.AddForce(Vector2.up * jumpSpeed);
-                isGrounded = false;
+            if(Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)){
+                transform.position += Vector3.right * movementSpeed * Time.deltaTime;
             }
-        }
-
-        // Animations
-        playerInput = Input.GetAxisRaw("Horizontal");
-        SwapSprite();
-        
-        if (currentCharacter == 0) {
-            AnimatorP.SetFloat("SpeedP", Input.GetAxisRaw("Horizontal"));
-        }
-        else if (currentCharacter == 1) {
-            // Ffion
-            AnimatorF.SetFloat("Speed", Input.GetAxisRaw("Horizontal"));
-        }
-
-        // Special moves
-        if (Input.GetKey(KeyCode.Space)) {
-            if (mana > 0) {
-                mana -= Time.deltaTime;
-                if (currentCharacter == 0) {
-                    // Phoenix fly
-                    rb.AddForce(Vector2.up * flyForce);              
-
-                } else if (currentCharacter == 1) {
-                    // Ffion
+            if(Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S)){
+                if(!isGrounded){
+                    // rigidBoddies[currentCharacter].gravityScale = 2;
                 }
             }
-        }
+            if(Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKey(KeyCode.W)){
+                if(isGrounded){
+                    rb.AddForce(Vector2.up * jumpSpeed);
+                    isGrounded = false;
+                }
+            }
 
-        Debug.Log("is grounded: " + isGrounded.ToString());
+            // Animations
+            playerInput = Input.GetAxisRaw("Horizontal");
+            SwapSprite();
+            
+            if (currentCharacter == 0) {
+                AnimatorP.SetFloat("SpeedP", Input.GetAxisRaw("Horizontal"));
+            }
+            else if (currentCharacter == 1) {
+                // Ffion
+                AnimatorF.SetFloat("Speed", Input.GetAxisRaw("Horizontal"));
+            }
+
+            // Special moves
+            if (Input.GetKey(KeyCode.Space)) {
+                if (mana > 0) {
+                    mana -= Time.deltaTime;
+                    if (currentCharacter == 0) {
+                        // Phoenix fly
+                        rb.AddForce(Vector2.up * flyForce);              
+
+                    } else if (currentCharacter == 1) {
+                        // Ffion
+                        hasShield = true;
+                    }
+                }
+            }
+
+            if (Input.GetKeyUp(KeyCode.Space)) {
+                hasShield = false;
+            }
+
+            Debug.Log("is grounded: " + isGrounded.ToString());
+            Debug.Log("has shield " + hasShield.ToString());
+        }
         
     }
 
@@ -118,15 +131,38 @@ public class PlayerMovement : MonoBehaviour
         if (collision.gameObject.tag == "Floor") {
             isGrounded = true;
         }
+
     }
 
     private void OnCollisionExit2D(Collision2D collision)
     {
         if (collision.gameObject.tag == "Floor") {
             isGrounded = false;
+            lastPosition = transform.position;
         }
     }
 
+    private void OnTriggerEnter2D(Collider2D collider) {
+        if (collider.gameObject.tag == "lowerBound") {
+            life = life - 10;
+            transform.position = lastPosition;
+        }
+
+        if (collider.gameObject.tag == "mana") {
+            mana = 3;
+            Destroy(collider.gameObject);
+        }
+    }
+
+    private void OnTriggerStay2D(Collider2D collision) {
+        if (!hasShield) {
+            if (collision.gameObject.tag == "Ray") {
+                life = life - 1f;
+            }
+        }
+    }
+
+  
 
     public void ChangeCharacter() {
         if (isGrounded) {
@@ -150,8 +186,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    void SwapSprite()
-    {
+    private void SwapSprite() {
         // Right
         if (playerInput > 0)
         {
@@ -172,10 +207,4 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    // private void FixedUpdate() {
-    //     rigidBoddies[currentCharacter].MovePosition(rigidBoddies[currentCharacter].position + movement * speed_ * Time.deltaTime);
-    // }
-
-    public float getLife() { return life; }
-    public float getMana() { return mana; }
 }

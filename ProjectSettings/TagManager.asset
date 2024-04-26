@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Floor
   - Enemy
+  - Ray
+  - lowerBound
+  - mana
   layers:
   - Default
   - TransparentFX
@@ -14,9 +17,9 @@ TagManager:
   - Water
   - UI
   - 
-  - 
+  - Ignorable1
   - background1
-  - 
+  - Enemies1
   - 
   - 
   - 
