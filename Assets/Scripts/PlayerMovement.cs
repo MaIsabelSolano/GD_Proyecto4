@@ -46,6 +46,9 @@ public class PlayerMovement : MonoBehaviour
 
     private bool hasShield = false;
 
+    private float timeBtwAttack;
+    public float startTimeAttack;
+
 
     // Start is called before the first frame update
     void Start()
@@ -117,6 +120,14 @@ public class PlayerMovement : MonoBehaviour
             if (Input.GetKeyUp(KeyCode.Space)) {
                 hasShield = false;
             }
+
+            // attack
+            if (timeBtwAttack <= 0) {
+                if (Input.GetKey(KeyCode.F)) {}
+            } else {
+                timeBtwAttack -= 0;
+            }
+
 
             Debug.Log("is grounded: " + isGrounded.ToString());
             Debug.Log("has shield " + hasShield.ToString());
